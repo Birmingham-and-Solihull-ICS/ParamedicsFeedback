@@ -1,0 +1,582 @@
+--- 
+title: "Paramedics Feedback Analysis"
+format: 
+    dashboard:
+        fontsize: 12
+        logo: BSOLICB.png
+        theme: cosmo
+        scrolling: true
+        expandable: true
+        embed-resources: true
+        nav-buttons:
+            - icon: house-door-fill
+              href: UserInfo.html
+            - icon: github
+              href: https://github.com/Birmingham-and-Solihull-ICS
+            - icon: info-circle
+              href: howto.html
+              
+execute:
+    freeze: true
+project:
+    output-dir: output
+--- 
+
+```{python}
+#| output: false
+#| echo: false
+import pandas as pd
+import os
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
+from nltk.stem.wordnet import WordNetLemmatizer
+import re, string
+
+nltk.download(['punkt',
+              'stopwords',
+              'wordnet',
+               'omw-1.4',
+              'averaged_perceptron_tagger'])
+```
+
+```{python}
+
+data = pd.read_excel('data\Feedback from Paramedics on the Road.xlsx', sheet_name='Data')
+theme = pd.read_excel('data\SurveyTheme.xlsx')
+
+subset = data.loc[:, ['How easy is it to access a GP via the Non-Public number?',
+                     'What services do you need to support you with admission avoidance to ED?',
+                     'How likely are you to recommend OPAL+ to a colleague?',
+                     'Have you used Patient Services on DoS?',
+                     'Do Senior Clinicians come out to the Ambulance to discuss your patient when delayed?',
+                     'Who do you call for Clinical Support on scene?',
+                     'What do you feel would improve handover delays?',
+                    'Have you used SDEC Services?'
+                     ]]
+```
+
+```{python}
+
+def remove_noise_and_lemmatize(tokens, stop_words=()):
+    lemmatizer = WordNetLemmatizer()
+    cleaned_tokens = []
+
+    for token, tag in pos_tag(tokens):
+        if token.lower() not in stop_words and token not in string.punctuation:
+            pos = 'n' if tag.startswith('NN') else 'v' if tag.startswith('VB') else 'a'
+            lemmatized_token = lemmatizer.lemmatize(token, pos)
+            cleaned_tokens.append(lemmatized_token.lower())
+
+    return cleaned_tokens
+
+def clean_text(text):
+    if not isinstance(text, str):
+        text = ''
+    
+     # Create a translation table that maps apostrophes to None
+    translator = str.maketrans('', '', "")
+    
+    # Custom replacements for common contractions
+    contractions_dict = {
+        'don’t': 'dont', 'won’t': 'wont', 'can’t': 'cant',
+        'isn’t': 'isnt', 'aren’t': 'arent', 'didn’t': 'didnt'
+    }
+    
+    for contraction, replacement in contractions_dict.items():
+        text = text.replace(contraction, replacement)
+        
+    # Remove apostrophes
+    text = text.translate(translator)
+
+    tokens = word_tokenize(text.lower())
+    cleaned_tokens = remove_noise_and_lemmatize(tokens, set(stopwords.words('english')))
+
+    return cleaned_tokens
+
+def tokenize_responses(column):
+    cleaned_responses = column.apply(clean_text)
+    flat_list = [word for sublist in cleaned_responses for word in sublist]
+    flat_list = [word for word in flat_list if word.isalpha()]
+    return pd.DataFrame(flat_list, columns=['Words'])
+
+```
+
+```{python}
+
+from nltk.collocations import BigramCollocationFinder, BigramAssocMeasures
+
+def find_bigrams(tokenized_df):
+    words = tokenized_df['Words'].tolist()
+    
+    # Find bi-grams
+    finder = BigramCollocationFinder.from_words(words)
+    
+    # Use Finder to find bi-grams
+    scored = finder.score_ngrams(nltk.collocations.BigramAssocMeasures().raw_freq)
+    
+    # Sort the bi-grams by frequency
+    sorted_bigrams = sorted(scored, key=lambda x: x[1], reverse=True)
+    
+    # Create a DataFrame
+    bigrams_df = pd.DataFrame(sorted_bigrams, columns=['Bigram', 'Frequency'])
+    
+    return bigrams_df
+```
+
+```{python}
+
+# Create DataFrames for Each Question
+Q1_df = tokenize_responses(subset['How easy is it to access a GP via the Non-Public number?'])
+Q2_df = tokenize_responses(subset['What services do you need to support you with admission avoidance to ED?'])
+Q3_df = tokenize_responses(subset['How likely are you to recommend OPAL+ to a colleague?'])
+Q4_df = tokenize_responses(subset['Have you used Patient Services on DoS?'])
+Q5_df = tokenize_responses(subset['Do Senior Clinicians come out to the Ambulance to discuss your patient when delayed?'])
+Q6_df = tokenize_responses(subset['Who do you call for Clinical Support on scene?'])
+Q7_df = tokenize_responses(subset['What do you feel would improve handover delays?'])
+Q8_df = tokenize_responses(subset['Have you used SDEC Services?'])
+```
+
+```{python}
+# Function to calculate word frequency
+def word_frequency(data, column):
+    word_counts = data[column].value_counts()
+    word_counts_df = word_counts.reset_index()
+    word_counts_df.columns = ['Word', 'Frequency']
+    
+    return word_counts_df
+
+Q1_word_counts = word_frequency(Q1_df, 'Words')
+Q2_word_counts = word_frequency(Q2_df, 'Words')
+Q3_word_counts = word_frequency(Q3_df, 'Words')
+Q4_word_counts = word_frequency(Q4_df, 'Words')
+Q5_word_counts = word_frequency(Q5_df, 'Words')
+Q6_word_counts = word_frequency(Q6_df, 'Words')
+Q7_word_counts = word_frequency(Q7_df, 'Words')
+Q8_word_counts = word_frequency(Q8_df, 'Words')
+```
+
+```{python}
+#| echo: false
+#| label: functions
+
+#1. Function to plot word frequency 
+import plotly.graph_objects as go
+
+def plot_word_frequency(word_counts_df, plot_width=800, plot_height=600):
+    # Sort the DataFrame by frequency in descending order
+    sorted_df = word_counts_df.sort_values(by='Frequency', ascending=False)
+
+    # Create a horizontal bar chart
+    fig = go.Figure([go.Bar(x=sorted_df['Frequency'], y=sorted_df['Word'], orientation='h')])
+
+    # Add titles and labels
+    fig.update_layout(
+        title='Word Frequency Distribution',
+        xaxis_title='Frequency',
+        yaxis_title='Words',
+        yaxis=dict(autorange="reversed"),  # To display highest frequencies at the top
+        width=plot_width,  # Width of the plot
+        height=plot_height  # Height of the plot
+    )
+
+    # Show the plot
+    fig.show()
+
+
+#2. Function to plot bar chart
+
+import plotly.express as px
+
+## Horizontal bar chart
+
+def plot_bar_chart(data, column, title):
+    
+    value_counts = data[column].value_counts().reset_index()
+    value_counts.columns = ['Responses', 'Frequency']
+    sorted_df = value_counts.sort_values(by='Frequency', ascending=False)
+    
+    fig = px.bar(sorted_df, x='Frequency', y='Responses', title=title, text = "Frequency", color="Frequency",
+    color_continuous_scale=px.colors.sequential.Viridis)
+    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=11)
+    fig.update_layout(
+        yaxis={'categoryorder':'total ascending'},
+        showlegend=False,
+        coloraxis_showscale=False
+        #width=plot_width,  # Width of the plot
+        #height=plot_height  # Height of the plot
+    )
+    fig.show()
+
+## Vertical bar chart
+
+def plot_bar_chart2(data, column, title):
+    value_counts = data[column].value_counts().reset_index()
+    value_counts.columns = ['Responses', 'Frequency']
+    sorted_df = value_counts.sort_values(by='Frequency', ascending=False)
+
+    fig = px.bar(sorted_df, x='Responses', y="Frequency", title=title,
+                 text="Frequency", color="Frequency", color_continuous_scale=px.colors.sequential.Cividis_r)
+
+    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=11)
+
+    fig.update_layout(
+        yaxis={'categoryorder': 'total ascending'},
+        xaxis_tickangle=-45,
+        showlegend=False,
+        coloraxis_showscale=False,
+        margin=dict(b=100)  # Adjust bottom margin to ensure labels fit
+        # width=plot_width,  # Width of the plot
+        # height=plot_height  # Height of the plot
+    )
+    fig.show()
+    
+#3. Function to plot word cloud
+
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+def plot_wordcloud(word_counts_data):
+    
+    # Create a dictionary where keys are words and values are their corresponding frequencies
+    word_freq_dict = word_counts_data.set_index('Word')['Frequency'].to_dict()
+    
+    # Create a WordCloud object
+    wordcloud = WordCloud(width=800, height=600, background_color ='white')
+
+    # Generate a word cloud
+    wordcloud.generate_from_frequencies(word_freq_dict)
+
+    # Display the word cloud using matplotlib
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')  # Turn off axis numbers and labels
+    plt.show()
+    
+#4. Function to plot treemap for bigrams
+def plot_treemap(ngrams_function, tokenized_response_df, ngram_column):
+    
+    ngrams_df = ngrams_function(tokenized_response_df)
+    
+    # Convert each tuple in the 'n-gram' column to a string
+    ngrams_df[ngram_column] = ngrams_df[ngram_column].apply(lambda x: ', '.join(x))
+    
+    total_freq = ngrams_df['Frequency'].sum()
+
+    ngrams_df['Frequency'] = (ngrams_df['Frequency'] / total_freq) * 100
+
+    modified_ngram = ngram_column.replace("gram", "-grams")
+
+    # Plot using plotly
+    fig = px.treemap(
+        ngrams_df.head(20),  
+        path=[ngram_column],
+        values='Frequency',
+        title=f"Top 20 {modified_ngram} by Frequency (%)",
+        custom_data=[ngram_column, 'Frequency'] 
+    )
+     # Update hover template to show only bigrams and frequency
+    fig.update_traces(
+        hovertemplate='<b>%{customdata[0]}</b><br>Frequency: %{customdata[1]:.2f}%'
+    )
+    fig.update_layout(
+        uniformtext=dict(minsize=10, mode='hide'),
+        coloraxis_showscale=False,
+        height=600,  
+        width=800   
+    )
+
+    fig.show()
+```
+
+# Q1 
+
+## {.sidebar}
+
+**Summary**:
+
+1. The most frequent response indicated that accessing a GP via the Non-Public number is "Easy," which suggests a generally positive experience for the majority of respondents.
+
+2. This is followed by reports of service inconsistency, as reflected in the "Hit and miss" responses.
+
+3. A number of respondents expressed that it "Takes too long" to access a GP via the Non-Public number, highlighting issues related to delays.
+
+4. Responses such as "Process does not work," "Numbers usually don't work," and "Don't answer the phone" point to significant difficulties and functionality issues within the service.
+
+5. Three respondents mentioned that access success depended on the practice, with some needing to call back on the practice's regular number and wait in the queue, thus indicating that not all practices have Non-Public numbers.
+
+## Column 
+
+```{python}
+#| title: How easy is it to access a GP via the Non-Public number?
+Q1_theme = pd.DataFrame(theme.iloc[:, 0].dropna())
+
+plot_bar_chart2(Q1_theme, column = 'Q1.Theme', title = "" )
+
+```
+
+## Column {.tabset}
+
+```{python}
+#| title: The Most Frequent Uni-grams
+plot_wordcloud(Q1_word_counts)
+```
+
+
+```{python}
+#| title: The Most Frequent Bi-grams
+
+plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q1_df,  ngram_column = "Bigram")
+```
+# Q2 {orientation="columns" fill="false"}
+
+## {.sidebar}
+
+**Summary**:
+
+1. *Improved Out-of-Hours and Overnight Services*: Needs for more services outside normal GP hours, including out-of-hours GPs, district nurses, and extended hours for services like OPAL or SDEC.
+
+2. *More Specialised Services and Direct Acess*: Suggestions include direct access to services like SDEC, SAU, MAU, ENT, urology, and pediatric advice for under 1s, without the need to go through EDs. 
+
+3. *Streamlined Referral Processes and Single Point of Contact*: Having a single point of access for various services like OPAL, community, 111, & mental health or a simplified referral process to reduce confusion and enhance efficiency. 
+
+4. *Mental Health Services*: Emphasizes the need for enhanced mental health services, including 24/7 mental health triage and direct access to mental health support without intermediary services. 
+
+5. *Increased Acceptance of Referrals and Expanded Criteria*: Calls for broader acceptance of referrals to specialized units and less rejection of non-critical cases to ED. 
+
+6. *Community and Home-Based Care*: Suggestions for more community-based services, night-sitting, increased capacity in community hospitals, and more in-home care options to reduce ED admissions. 
+
+7. *Digital and Updated Directories of Services*: The need for a digital, constantly updated directory of services, possibly with a system that suggests the best service options based on input criteria.
+
+8. *Funding and Resources for Bed Availability*: Addressing the issue of bed shortages and funding for more in-patient care facilities.
+
+9. *Improved Patient Education and Public Awareness*: Emphasizing the need for educating the public on when to use emergency services and the availability of alternatives.
+
+10. *Enhanced Skills and Capabilities for Paramedics*:  Emphasizes the need for expanding the scope of practice for paramedics, including the ability to perform more advanced medical procedures and to prescribe medications.
+
+11. *Enhanced Support for Social Issues*: It emphasizes the need for better support mechanisms for patients who have social care needs rather than medical emergencies.
+
+12. *Enhanced Support for Specific Conditions*: This includes pathways for conditions like TIA (Transient Ischemic Attack), chest pain clinics, early pregnancy issues, and catheter problems.
+
+13. *Improved Clinical Decision Making*: Highlights the need for more effective consultation with experienced clinicians to determine the most appropriate level of care required, and subsequently, to facilitate referrals to alternative, possibly less intensive services when appropriate. 
+
+14. *Improving Pre-Hospital Care and Discharge Processes*: The response questions why patients can't be treated and discharged directly from an ambulance when appropriate and calls for more support for patients with social issues who are medically fit but cannot be left at home.
+
+## Column 
+
+```{python}
+#| title: What services do you need to support you with admission avoidance to ED?
+Q2_theme = pd.DataFrame(theme.iloc[:, 1].dropna())
+
+plot_bar_chart(Q2_theme, column = 'Q2.Theme', title = "")
+```
+
+
+## Column {.tabset}
+
+```{python}
+#| title: The Most Frequent Uni-grams
+plot_wordcloud(Q2_word_counts)
+```
+
+```{python}
+#| title: The Most Frequent Bi-grams
+
+plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q2_df,  ngram_column = "Bigram")
+```
+
+# Q3 to Q5
+
+## Row {height=51% fill="false"}
+
+```{python}
+#| title: How likely are you to recommend OPAL+ to a colleague?
+
+
+Q3 = pd.DataFrame(subset.iloc[:, 2])
+
+plot_bar_chart2(Q3, column = 'How likely are you to recommend OPAL+ to a colleague?', title = "")
+
+```
+
+## Row {height=49% fill="false"}
+
+```{python}
+#| title: Have you used Patient Services on DoS?
+
+Q4 = pd.DataFrame(subset.iloc[:, 3])
+
+plot_bar_chart2(Q4, column = 'Have you used Patient Services on DoS?', title = "")
+```
+
+
+```{python}
+#| title: Do Senior Clinicians come out to the Ambulance to discuss your patient when delayed?
+
+Q5 = pd.DataFrame(subset.iloc[:, 4])
+
+plot_bar_chart2(Q5, column = 'Do Senior Clinicians come out to the Ambulance to discuss your patient when delayed?', title = "")
+
+```
+
+# Q6 {orientation="columns" fill="false"}
+
+## {.sidebar}
+
+**Summary**:
+
+1. *Referral to Specific Services*: Referral to specific services based on the patient's needs, including various specialized healthcare services.
+
+2. *General Practitioner (GP)*: Many respondents mentioned calling a GP for clinical support on scene. 
+
+3. *Depends on the Case*: Several responses highlight that the decision on whom to call is dependent on the particular situation at hand. These include calling direct wards, district nurses, or other relevant agencies.
+
+
+## Column 
+
+```{python}
+#| title: Who do you call for Clinical Support on scene?
+Q6_theme = pd.DataFrame(theme.iloc[:, 2].dropna())
+
+plot_bar_chart2(Q6_theme, column = 'Q6.Theme', title = "" )
+```
+
+## Column {.tabset}
+
+```{python}
+#| title: The Most Frequent Uni-grams
+plot_wordcloud(Q6_word_counts)
+```
+
+```{python}
+#| title: The Most Frequent Bi-grams
+
+plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q6_df,  ngram_column = "Bigram")
+```
+# Q7 {orientation="columns" fill="false"}
+
+## {.sidebar}
+
+**Summary**:
+
+1. *Enhanced Pre-Hospital Capabilities*: Some respondents suggest allowing ambulance clinicians to perform more diagnostic tests (like blood tests) on scene to streamline the patient journey and reduce delays upon arrival at the hospital.
+
+2. *Streamlining Hospital Admissions and Discharges*: Responses suggest enhancing hospital discharge processes, especially during weekends, and considering alternative locations for waiting patients, like interim discharge wards.
+
+3. *Improved Triage and Assessment Processes*: Many responses highlight the need for better triage systems, both in ambulance services and at hospitals, to ensure that patients are directed to the most appropriate care setting. This includes immediate triage by senior clinicians and better assessment on 111 calls.
+
+4. *Extended Hours and Availability of Alternative Pathways*: Several responses suggest extending the operational hours of alternative healthcare pathways and services, such as Same Day Emergency Care (SDEC), Minor Injuries Units, and Out-of-Hours services, to reduce the reliance on emergency departments.
+
+5. *Hospital and ED Operational Changes*: Responses indicate a need for hospitals to take more responsibility in managing handovers, such as providing cohort nurses, using corridors for patient care, and improving internal hospital processes to expedite patient flow.
+
+6. *Direct Acess to Specialised Services*:Suggestions on having direct access to specialised services including MAU, SAU, pathways for TIA and  non cardiac chest pain.
+
+7. *Increased Social and Community Care Support*: A few responses point to the need for more social care and community support to increase discharge rates from hospitals, thereby freeing up space and reducing handover delays.
+
+8. *Improved Coordination and Communication*: Emphasizing the need for better communication between ambulance services and hospital staff, and more effective coordination of care, including the use of technology for handover processes.
+
+9. *Optimizing Resource Utilization and Alternative Transportation*. Highlighting the importance of using resources efficiently by employing alternative transportation methods, such as taxis, for cases where ambulance services are not critically needed. This approach aims to ensure that ambulance services are reserved for more urgent and serious medical situations, while still providing a means for individuals to reach emergency departments when necessary.
+
+10. *Public Education and Awareness*: Emphasis on educating the public about when to attend A&E, the availability of GP services, and the existence of alternative pathways. This includes suggestions for national advertising campaigns to inform the public about the appropriate use of healthcare services.
+
+11. *Increased Acceptance of Referrals and Expanded Criteria*: Calls for broader acceptance of referrals to specialized units and less rejection of non-critical cases to ED. 
+
+12. *Funding and Resources for Bed Availability*:  Addressing the issue of bed shortages and funding for more in-patient care facilities.
+
+13. *Enhanced Skills and Capabilities for Paramedics*: Emphasizes the need for expanding the scope of practice for paramedics, including the ability to perform more advanced medical procedures and to prescribe medications.
+
+14. *Political and Systemic Changes*: Some respondents mention the need for political action and prioritization, implying that the issue of handover delays requires systemic changes at a higher level.
+
+15. *Welfare Support or Crews*: Calls for welfare support for crews who are typically stuck outside ED for hours.
+
+16. *Walk-in Centre Drop-in Availability*: Suggestions on having walk-in drop-in availability.
+
+17. *Preventative Care and Early Intervention*. Emphasizing the importance of primary care providers, such as General Practitioners (GPs), in preventing conditions from escalating to the point where hospitalization is necessary.
+
+18. *Consistent and Standardized Pathways Across Services*: There's a call for more standardized and uniform pathways across different healthcare services to reduce confusion and inefficiency.
+
+19. *Funding and Resources for Bed Availability*: Addressing the issue of bed shortages and funding for more in-patient care facilities.
+
+20. *Staffing and Resource Enhancements*: Increasing staffing levels, especially during peak times, and improving resource allocation within hospitals and ambulance services.
+
+## Column 
+
+```{python}
+#| title: What do you feel would improve handover delays?
+Q7_theme = pd.DataFrame(theme.iloc[:, 3].dropna())
+
+plot_bar_chart(Q7_theme, column = 'Q7.Theme', title = "" )
+```
+## Column {.tabset}
+
+```{python}
+#| title: The Most Frequent Uni-grams
+plot_wordcloud(Q7_word_counts)
+
+```
+
+```{python}
+#| title: The Most Frequent Bi-grams
+
+plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q7_df,  ngram_column = "Bigram")
+```
+
+# Q8
+
+## {.sidebar}
+
+**Summary**:
+
+1. The majority of responses indicate that respondents have utilized SDEC services, followed by "No" responses.
+
+2. *Tried but Unsuccessful*: Respondents attempted to use SDEC services but were unsuccessful, often due to full capacity or service unavailability. 
+<br>
+*Examples*:
+<br>
+"I have tried to refer and they are either full or not accepting." <br> "Working on CVT, they are often rejected as no observations on the patient, especially surgical cases." <br> "I have tried to refer and they are either full or not accepting."
+
+3. *Conditional or Qualified Yes*: Respondents have used the service or attempted to use it, but faced inconsistent outcomes or challenges.
+<br>
+*Examples*:
+<br>
+"Yes, however, normally unsuccessful and advised no beds. Advised normally only fit to sit spaces available, and this is often full as well. " <br> "Yes, but it can be difficult and inconsistent. In my opinion, SDEC is a waste of time, money, and space. For instance, Shrewsbury SDEC has 6 beds and a 'fit to sit' area but only accepts patients for 10 hours a day. If patients aren’t suitable for SDEC, they must go to A&E anyway—why not utilize those beds for additional majors, open 24 hours a day, and make the service worthwhile?"
+
+4. *Sometimes*:  Respondents indicate occasional or situational use of SDEC Services
+
+5. *SDEC Not Available*: Respondents have noted that SDEC services are not available in their area, such as Stoke.
+
+## Column
+
+```{python}
+#| title: Have you used SDEC Services?
+Q8_theme = pd.DataFrame(theme.iloc[:, 4].dropna())
+
+plot_bar_chart2(Q8_theme, column = 'Q8.Theme', title = "")
+```
+
+## Column {.tabset}
+
+```{python}
+#| title: The Most Frequent Uni-grams
+plot_wordcloud(Q8_word_counts)
+
+```
+
+```{python}
+#| title: The Most Frequent Bi-grams
+
+plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngram_column = "Bigram")
+```
+
+
+
+# Data   {orientation="rows" fill="false"}
+
+```{python}
+allData = pd.read_excel('Data\AllData.xlsx')
+from itables import show
+show(allData, 
+buttons = ['copy', 'excel', 'pdf'])
+```
+
