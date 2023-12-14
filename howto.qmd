@@ -1,10 +1,21 @@
 ---
-title: "User Guidance"
+title: ""
 format: 
-    dashboard
+    dashboard:
+        orientation: columns
+        fontsize: 12
+        logo: BSOLICB.png
+        theme: cosmo
+        embed-resources: true
+        nav-buttons:
+            - icon: arrow-left-circle
+              href: Paramedics2.html
+execute:
+    freeze: true
+
 ---
 
-::: {.card title="How to Interact with the Visuals?" fill=false}
+::: {.card title="**How to Interact with the Visuals?**" fill=false}
 
 
 1. *Zooming*: Click and drag to select a specific area of the chart to zoom into for a closer look. Double-click to zoom back out.
@@ -19,12 +30,13 @@ format:
 
 :::
 
-:::{.card title="How to Interact with the Data Table?" fill=false}
+:::{.card title="**How to Interact with the Data Table?**" fill=false}
 
 1. *Searching*: Use the 'Search' box to filter the table entries. As you type, the table will dynamically display only the rows that contain your search keyword.
 2. *Sorting*: Click on any column header to sort the table by that column. Click once for ascending order, and click again for descending order.
 3. *Changing Number of Entries Displayed*: You can change how many entries you view at a time by selecting a number from the 'Show [number] entries' dropdown menu, which typically appears above the table on the left-hand side.
 4. *Copying, Excel, PDF*: Use the buttons located typically above the table on the right-hand side to copy data to the clipboard, export the table to an Excel file, or save the table as a PDF.
+5. *Paging*: Navigate to subsequent pages by clicking on the page numbers. If the data table is not displayed instantly, click the 'Data' tab twice.
 
 :::
 

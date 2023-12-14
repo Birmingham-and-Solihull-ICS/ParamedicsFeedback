@@ -1,31 +1,53 @@
 --- 
-title: "User Information"
+title: ""
 format: 
-    dashboard
+    dashboard:
+        orientation: columns
+        fontsize: 12
+        logo: BSOLICB.png
+        theme: cosmo
+        embed-resources: true
+        nav-buttons:
+            - icon: arrow-left-circle
+              href: Paramedics2.html
+execute:
+    freeze: true
 --- 
 
-::: {.card title="Purpose" fill="false"}
+## Column
+
+::: {.card title="**Purpose**" }
 
 This analysis delves into the textual feedback provided by paramedic crews, focusing on their perspectives and suggestions regarding various aspects of ambulance services. It encompasses their views on several topics, including:
 
 1. The ease of accessing GPs through non-public numbers
+
 2. The support services needed to avoid unnecessary admissions to Emergency Departments (EDs)
+
 3. The likelihood of recommending OPAL+ to colleagues
+
 4. Their experiences with Patient Services on DoS
+
 5. The involvement of Senior Clinicians in on-scene discussions
+
 6. The choices for clinical support during incidents
+
 7. Ideas for reducing handover delays
-8. The use of Same Day Emergency Care (SDEC) Services"
+
+8. The use of Same Day Emergency Care (SDEC) Services
 
 :::
 
-::: {.card title="Methodology" fill="false"}
-1. The responses were categorized into several common themes for a high-level analysis of feedback from paramedic crews and to facilitate visualization. Details of the categorization process are available in the data tab.
-2. The most frequently used words were identified by splitting the responses into root words, following the removal of stop words, punctuation, and noise, and applying lemmatization using natural language processing techniques. Care must be taken when analyzing the frequency of words to consider the context in which they appear. Therefore, this word frequency analysis should be viewed in conjunction with the common themes identified in the respondents' answers.
+## Column
+
+::: {.card title="**Methodology**" }
+
+1. The responses were categorized into several common themes for high-level analysis of feedback from paramedic crews and to facilitate visualization. Details of the categorization process are available in the data tab.
+
+2. The most frequently used words were identified by splitting the responses into root words, following the removal of stop words, punctuation, and noise, and by applying lemmatization using natural language processing techniques. Care must be taken to consider the context in which the words appear when analyzing their frequency. Therefore, this word frequency analysis should be viewed in conjunction with the common themes identified in the respondents' answers.
+
+3. The most frequent unigrams, which are single words that appear most often in the respondents' feedback, were identified, as were the most frequent bigrams, which are combinations of two words that appear most frequently in the feedback. 
+
+
 :::
 
-::: {.card title="Lead Analyst" fill="false"}
-Siti Hassan <br>
-
-If you have any suggestions or feedback, please forward them to this email: siti.hassan@nhs.net
-:::

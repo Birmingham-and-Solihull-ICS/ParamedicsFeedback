@@ -10,16 +10,17 @@ format:
         embed-resources: true
         nav-buttons:
             - icon: house-door-fill
-              href: UserInfo.html
-            - icon: github
-              href: https://github.com/Birmingham-and-Solihull-ICS
+              href: userinfo.html
             - icon: info-circle
               href: howto.html
+            - icon: github
+              href: https://github.com/orgs/Birmingham-and-Solihull-ICS/repositories
+            - icon: inbox
+              href: contact.html
               
 execute:
     freeze: true
-project:
-    output-dir: output
+
 --- 
 
 ```{python}
@@ -199,12 +200,12 @@ def plot_bar_chart(data, column, title):
     
     fig = px.bar(sorted_df, x='Frequency', y='Responses', title=title, text = "Frequency", color="Frequency",
     color_continuous_scale=px.colors.sequential.Viridis)
-    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=11)
+    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=8)
     fig.update_layout(
         yaxis={'categoryorder':'total ascending'},
         showlegend=False,
         coloraxis_showscale=False
-        #width=plot_width,  # Width of the plot
+        # width=800,  # Width of the plot
         #height=plot_height  # Height of the plot
     )
     fig.show()
@@ -219,15 +220,15 @@ def plot_bar_chart2(data, column, title):
     fig = px.bar(sorted_df, x='Responses', y="Frequency", title=title,
                  text="Frequency", color="Frequency", color_continuous_scale=px.colors.sequential.Cividis_r)
 
-    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=11)
+    fig.update_traces(textposition="outside", textangle=0, cliponaxis=False, textfont_size=8)
 
     fig.update_layout(
         yaxis={'categoryorder': 'total ascending'},
         xaxis_tickangle=-45,
         showlegend=False,
         coloraxis_showscale=False,
-        margin=dict(b=100)  # Adjust bottom margin to ensure labels fit
-        # width=plot_width,  # Width of the plot
+        margin=dict(b=100) # Adjust bottom margin to ensure labels fit
+        # width=800,  # Width of the plot
         # height=plot_height  # Height of the plot
     )
     fig.show()
@@ -256,16 +257,13 @@ def plot_wordcloud(word_counts_data):
     
 #4. Function to plot treemap for bigrams
 def plot_treemap(ngrams_function, tokenized_response_df, ngram_column):
-    
     ngrams_df = ngrams_function(tokenized_response_df)
     
     # Convert each tuple in the 'n-gram' column to a string
     ngrams_df[ngram_column] = ngrams_df[ngram_column].apply(lambda x: ', '.join(x))
     
     total_freq = ngrams_df['Frequency'].sum()
-
     ngrams_df['Frequency'] = (ngrams_df['Frequency'] / total_freq) * 100
-
     modified_ngram = ngram_column.replace("gram", "-grams")
 
     # Plot using plotly
@@ -276,15 +274,19 @@ def plot_treemap(ngrams_function, tokenized_response_df, ngram_column):
         title=f"Top 20 {modified_ngram} by Frequency (%)",
         custom_data=[ngram_column, 'Frequency'] 
     )
-     # Update hover template to show only bigrams and frequency
+
+    # Update hover template to show only bigrams and frequency
     fig.update_traces(
-        hovertemplate='<b>%{customdata[0]}</b><br>Frequency: %{customdata[1]:.2f}%'
+        hovertemplate='<b>%{customdata[0]}</b><br>Frequency: %{customdata[1]:.2f}%',
+        textposition='middle center',  # Center the text inside the boxes
+        textfont=dict(size=8)          # Set the text font size
     )
+
     fig.update_layout(
-        uniformtext=dict(minsize=10, mode='hide'),
+        uniformtext=dict(minsize=8, mode='hide'),
         coloraxis_showscale=False,
-        height=600,  
-        width=800   
+        height=600,
+        width=1000
     )
 
     fig.show()
@@ -319,13 +321,12 @@ plot_bar_chart2(Q1_theme, column = 'Q1.Theme', title = "" )
 ## Column {.tabset}
 
 ```{python}
-#| title: The Most Frequent Uni-grams
+#| title: The Most Frequent Unigrams
 plot_wordcloud(Q1_word_counts)
 ```
 
-
 ```{python}
-#| title: The Most Frequent Bi-grams
+#| title: The Most Frequent Bigrams
 
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q1_df,  ngram_column = "Bigram")
 ```
@@ -372,16 +373,15 @@ Q2_theme = pd.DataFrame(theme.iloc[:, 1].dropna())
 plot_bar_chart(Q2_theme, column = 'Q2.Theme', title = "")
 ```
 
-
 ## Column {.tabset}
 
 ```{python}
-#| title: The Most Frequent Uni-grams
+#| title: The Most Frequent Unigrams
 plot_wordcloud(Q2_word_counts)
 ```
 
 ```{python}
-#| title: The Most Frequent Bi-grams
+#| title: The Most Frequent Bigrams
 
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q2_df,  ngram_column = "Bigram")
 ```
@@ -445,12 +445,12 @@ plot_bar_chart2(Q6_theme, column = 'Q6.Theme', title = "" )
 ## Column {.tabset}
 
 ```{python}
-#| title: The Most Frequent Uni-grams
+#| title: The Most Frequent Unigrams
 plot_wordcloud(Q6_word_counts)
 ```
 
 ```{python}
-#| title: The Most Frequent Bi-grams
+#| title: The Most Frequent Bigrams
 
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q6_df,  ngram_column = "Bigram")
 ```
@@ -511,13 +511,13 @@ plot_bar_chart(Q7_theme, column = 'Q7.Theme', title = "" )
 ## Column {.tabset}
 
 ```{python}
-#| title: The Most Frequent Uni-grams
+#| title: The Most Frequent Unigrams
 plot_wordcloud(Q7_word_counts)
 
 ```
 
 ```{python}
-#| title: The Most Frequent Bi-grams
+#| title: The Most Frequent Bigrams
 
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q7_df,  ngram_column = "Bigram")
 ```
@@ -558,25 +558,28 @@ plot_bar_chart2(Q8_theme, column = 'Q8.Theme', title = "")
 ## Column {.tabset}
 
 ```{python}
-#| title: The Most Frequent Uni-grams
+#| title: The Most Frequent Unigrams
 plot_wordcloud(Q8_word_counts)
 
 ```
 
 ```{python}
-#| title: The Most Frequent Bi-grams
+#| title: The Most Frequent Bigrams
 
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngram_column = "Bigram")
 ```
 
 
-
 # Data   {orientation="rows" fill="false"}
 
-```{python}
-allData = pd.read_excel('Data\AllData.xlsx')
-from itables import show
-show(allData, 
-buttons = ['copy', 'excel', 'pdf'])
-```
 
+```{python}
+allData = pd.read_excel('data\AllData.xlsx')
+from itables import show
+
+show(allData, 
+search = False,
+paging = True,
+buttons = ['copy', 'excel', 'pdf'])
+
+```
