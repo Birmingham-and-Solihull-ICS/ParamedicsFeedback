@@ -8,9 +8,12 @@ format:
         embed-resources: true
         nav-buttons:
             - icon: arrow-left-circle
-              href: Paramedics2.html
+              href: ParamedicsAnalysis.html
+
 execute:
-    freeze: true
+    enabled: true
+project:
+  output-dir: output
 --- 
 
 ::: {.card title="**Contact**" fill="false" }

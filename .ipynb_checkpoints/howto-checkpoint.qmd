@@ -9,10 +9,12 @@ format:
         embed-resources: true
         nav-buttons:
             - icon: arrow-left-circle
-              href: Paramedics2.html
-execute:
-    freeze: true
+              href: ParamedicsAnalysis.html
 
+execute:
+    enabled: true
+project:
+  output-dir: output
 ---
 
 ::: {.card title="**How to Interact with the Visuals?**" fill=false}

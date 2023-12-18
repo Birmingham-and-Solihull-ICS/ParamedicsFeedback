@@ -1,23 +1,11 @@
 --- 
 title: "Paramedics Feedback Analysis"
 format: 
-    dashboard:
-        fontsize: 12
-        logo: BSOLICB.png
-        theme: cosmo
-        scrolling: true
-        expandable: true
-        embed-resources: true
-        nav-buttons:
-            - icon: house-door-fill
-              href: userinfo.html
-            - icon: info-circle
-              href: howto.html
-            - icon: github
-              href: https://github.com/orgs/Birmingham-and-Solihull-ICS/repositories
-            - icon: inbox
-              href: contact.html
-              
+  dashboard:
+    theme: morph
+    nav-buttons: [github]
+
+                  
 execute:
     freeze: true
 
@@ -44,8 +32,8 @@ nltk.download(['punkt',
 
 ```{python}
 
-data = pd.read_excel('data\Feedback from Paramedics on the Road.xlsx', sheet_name='Data')
-theme = pd.read_excel('data\SurveyTheme.xlsx')
+data = pd.read_excel('Feedback from Paramedics on the Road.xlsx', sheet_name='Data')
+theme = pd.read_excel('SurveyTheme.xlsx')
 
 subset = data.loc[:, ['How easy is it to access a GP via the Non-Public number?',
                      'What services do you need to support you with admission avoidance to ED?',
@@ -574,7 +562,7 @@ plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngr
 
 
 ```{python}
-allData = pd.read_excel('data\AllData.xlsx')
+allData = pd.read_excel('AllData.xlsx')
 from itables import show
 
 show(allData, 
