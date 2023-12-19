@@ -13,8 +13,7 @@ format:
 
 execute:
     enabled: true
-project:
-  execute-dir: ParamedicsFeedback
+
 --- 
 
 ## Column

@@ -6,7 +6,7 @@
 .DS_Store
 .quarto
 
-# Exclude the following directories 
+# Exclude the following directories
 /data/
 /output/
 
@@ -19,3 +19,5 @@
 *.xlsb
 *.csv
 *.pdf
+
+/.quarto/
