@@ -1,0 +1,21 @@
+--- 
+title: ""
+format: 
+    dashboard:
+        fontsize: 12
+        logo: BSOLICB.png
+        theme: cosmo
+        embed-resources: true
+        nav-buttons:
+            - icon: arrow-left-circle
+              href: ParamedicsAnalysis.html
+
+execute:
+    enabled: true
+project:
+  execute-dir: ParamedicsFeedback
+--- 
+
+::: {.card title="**Contact**" fill="false" }
+If you have any suggestions or feedback, please forward them to this email: siti.hassan@nhs.net
+:::
