@@ -584,6 +584,8 @@ plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngr
 
 # Data   {orientation="rows" fill="false"}
 
+Click the next page number and 'Data' tab to navigate through the data on different pages.
+
 ```{python}
 allData = pd.read_excel('../data/AllData.xlsx')
 
