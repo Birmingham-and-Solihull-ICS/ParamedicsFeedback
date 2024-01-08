@@ -1,6 +1,8 @@
 
 # Paramedics Feedback Analysis
 
+Access the dashboard via this link: [Dashboard](https://birmingham-and-solihull-ics.github.io/ParamedicsFeedback/)
+
 ## Overview
 
 This repository contains the data analysis project for Paramedics Feedback provided by the Birmingham and Solihull ICB. The aim is to extract insights from textual feedback given by paramedic crews and visualize the frequency of specific terms and phrases to understand common sentiments and issues.
