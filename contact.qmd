@@ -12,8 +12,12 @@ format:
 
 execute:
     enabled: true
+<<<<<<< HEAD
 project:
   output-dir: output
+=======
+
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 --- 
 
 ::: {.card title="**Contact**" fill="false" }

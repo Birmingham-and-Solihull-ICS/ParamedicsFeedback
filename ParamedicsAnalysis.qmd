@@ -3,6 +3,10 @@
 title: "Paramedics Feedback Analysis"
 format: 
   dashboard:
+<<<<<<< HEAD
+=======
+    embed-resources: true
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
     theme: cosmo
     logo: BSOLICB.png
     nav-buttons:
@@ -16,8 +20,14 @@ format:
         href: contact.html
 execute:
   enabled: true
+<<<<<<< HEAD
 project:
   output-dir: output
+=======
+jupyter:
+    python3
+
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 ---
 
 
@@ -161,14 +171,23 @@ Q8_word_counts = word_frequency(Q8_df, 'Words')
 #| label: functions
 
 #1. Function to plot word frequency 
+<<<<<<< HEAD
 import plotly.graph_objects as go
+=======
+import plotly.express as px
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 
 def plot_word_frequency(word_counts_df, plot_width=800, plot_height=600):
     # Sort the DataFrame by frequency in descending order
     sorted_df = word_counts_df.sort_values(by='Frequency', ascending=False)
 
+<<<<<<< HEAD
     # Create a horizontal bar chart
     fig = go.Figure([go.Bar(x=sorted_df['Frequency'], y=sorted_df['Word'], orientation='h')])
+=======
+    # Create a horizontal bar chart using plotly.express
+    fig = px.bar(sorted_df, x='Frequency', y='Word', orientation='h')
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 
     # Add titles and labels
     fig.update_layout(
@@ -186,8 +205,11 @@ def plot_word_frequency(word_counts_df, plot_width=800, plot_height=600):
 
 #2. Function to plot bar chart
 
+<<<<<<< HEAD
 import plotly.express as px
 
+=======
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 ## Horizontal bar chart
 
 def plot_bar_chart(data, column, title):
@@ -566,12 +588,17 @@ plot_wordcloud(Q8_word_counts)
 plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngram_column = "Bigram")
 ```
 
+<<<<<<< HEAD
 
 
 
 
 ```{python}
 # Removed this part at this point
+=======
+```{python}
+# Removed this part for now
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
 # Data   {orientation="rows" fill="false"}
 #allData = pd.read_excel('data\AllData.xlsx')
 #from itables import show
@@ -582,3 +609,8 @@ plot_treemap(ngrams_function = find_bigrams, tokenized_response_df = Q8_df,  ngr
 #buttons = ['copy', 'excel', 'pdf'])
 
 ```
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
