@@ -12,7 +12,7 @@ format:
       - icon: info-circle
         href: howto.html
       - icon: github
-        href: https://github.com/orgs/Birmingham-and-Solihull-ICS/repositories
+        href: https://github.com/Birmingham-and-Solihull-ICS/ParamedicsFeedback
       - icon: inbox
         href: contact.html
 execute:
