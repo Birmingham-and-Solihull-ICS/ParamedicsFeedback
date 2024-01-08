@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # BSOL sample project folder
 
 This git repository contains a shell that should be used as the default structure for new projects
@@ -22,8 +22,6 @@ __Please update/replace this README file with one relevant to your project__
 * Comment your code to make sure others can follow.
 * Consider your naming conventions: we recommend `snake case` where spaces are replaced by underscores and no capitals are use. E.g. `outpatient_referral_data`
 
-
-=======
 # Paramedics Feedback Analysis
 
 ## Overview
@@ -57,5 +55,5 @@ To ensure compatibility and reproducibility, the following versions were used du
 * **Plotly Version**: 5.10.0
   Note:Plotly versions greater than 5.11 do not render the plots in the HTML files.
   
->>>>>>> 639ba9930a15e5b2880e0543a7a243affcc7b145
+>>>>>>> 
 This repository is dual licensed under the [Open Government v3]([https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) & MIT. All code can outputs are subject to Crown Copyright.
